@@ -5,6 +5,7 @@ import br.shizuca.social.domain.model.User;
 import br.shizuca.social.domain.repository.PostRepository;
 import br.shizuca.social.dto.CreatePostRequest;
 import br.shizuca.social.dto.PostResponse;
+import io.quarkus.panache.common.Sort;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
@@ -54,7 +55,7 @@ public class PostResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        var query = repository.find("user", user.get());
+        var query = repository.find("user", Sort.by("dateTime", Sort.Direction.Descending),user.get());
 
         return Response.ok(
                 query.list()
