@@ -24,11 +24,10 @@ public class UserResource {
     public Response findById(@PathParam("id") Long id) {
         Optional<User> p = User.findByIdOptional(id);
 
-        if(p.isPresent()) {
+        if(p.isPresent())
             return Response.ok(p.get()).build();
-        }else{
-            throw new NotFoundException("User not foud!");
-        }
+
+        return Response.status(Response.Status.NOT_FOUND).build();
     }
 
     @POST
