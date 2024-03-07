@@ -3,16 +3,25 @@ package br.shizuca.social.resource;
 import br.shizuca.social.domain.model.User;
 import br.shizuca.social.dto.CreateUserRequest;
 import jakarta.transaction.Transactional;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.util.Optional;
+import java.util.Set;
 
 @Path("users")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class UserResource {
+
+    private final Validator validator;
+
+    public UserResource(Validator validator) {
+        this.validator = validator;
+    }
 
     @GET
     public Response findAll() {
@@ -33,6 +42,13 @@ public class UserResource {
     @POST
     @Transactional
     public Response create(CreateUserRequest userRequest) {
+
+        Set<ConstraintViolation<CreateUserRequest>> violations = validator.validate(userRequest);
+
+        if(!violations.isEmpty()) {
+            ConstraintViolation<CreateUserRequest> error = violations.stream().findAny().get();
+            return Response.status(400).entity(error.getMessage()).build();
+        }
         User user = new User();
         user.setAge(userRequest.getAge());
         user.setName(userRequest.getName());
