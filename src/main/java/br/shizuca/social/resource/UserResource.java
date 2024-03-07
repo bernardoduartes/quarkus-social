@@ -2,6 +2,7 @@ package br.shizuca.social.resource;
 
 import br.shizuca.social.domain.model.User;
 import br.shizuca.social.dto.CreateUserRequest;
+import br.shizuca.social.exception.ResponseError;
 import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
@@ -46,9 +47,10 @@ public class UserResource {
         Set<ConstraintViolation<CreateUserRequest>> violations = validator.validate(userRequest);
 
         if(!violations.isEmpty()) {
-            ConstraintViolation<CreateUserRequest> error = violations.stream().findAny().get();
-            return Response.status(400).entity(error.getMessage()).build();
+            ResponseError responseError = ResponseError.createFromValidation(violations);
+            return Response.status(400).entity(responseError).build();
         }
+
         User user = new User();
         user.setAge(userRequest.getAge());
         user.setName(userRequest.getName());
