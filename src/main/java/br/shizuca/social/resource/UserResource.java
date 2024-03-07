@@ -46,22 +46,24 @@ public class UserResource {
 
         Set<ConstraintViolation<CreateUserRequest>> violations = validator.validate(userRequest);
 
-        if(!violations.isEmpty()) {
-            ResponseError responseError = ResponseError.createFromValidation(violations);
-            return Response.status(400).entity(responseError).build();
-        }
+        if(!violations.isEmpty())
+            return ResponseError.createFromValidation(violations).withStatusCode(ResponseError.UNPROCESSABLE_ENTITY_STATUS);
 
         User user = new User();
         user.setAge(userRequest.getAge());
         user.setName(userRequest.getName());
         user.persist();
-        return Response.ok(userRequest).build();
+
+        return Response
+                .status(Response.Status.CREATED.getStatusCode())
+                .entity(user)
+                .build();
     }
 
     @PUT
     @Path("{id}")
     @Transactional
-    public void update(@PathParam("id") Long id, CreateUserRequest userRequest){
+    public Response update(@PathParam("id") Long id, CreateUserRequest userRequest){
         Optional<User> p = User.findByIdOptional(id);
 
         if(p.isPresent()) {
@@ -71,15 +73,19 @@ public class UserResource {
         }else{
             throw new NotFoundException("User not foud!");
         }
+
+        return Response.noContent().build();
     }
 
     @DELETE
     @Path("{id}")
     @Transactional
-    public void create(@PathParam("id") Long id){
+    public Response delete(@PathParam("id") Long id){
         Optional<User> p = User.findByIdOptional(id);
         p.ifPresentOrElse(User::delete, () -> {
             throw new NotFoundException("User not foud!");
         });
+
+        return Response.noContent().build();
     }
 }

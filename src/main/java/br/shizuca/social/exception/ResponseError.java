@@ -1,6 +1,7 @@
 package br.shizuca.social.exception;
 
 import jakarta.validation.ConstraintViolation;
+import jakarta.ws.rs.core.Response;
 
 import java.util.Collection;
 import java.util.List;
@@ -47,7 +48,7 @@ public class ResponseError {
         this.errors = errors;
     }
 
-  /*  public Response withStatusCode(int code){
+   public Response withStatusCode(int code){
         return Response.status(code).entity(this).build();
-    }*/
+    }
 }
