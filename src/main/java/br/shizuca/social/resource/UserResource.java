@@ -64,6 +64,12 @@ public class UserResource {
     @Path("{id}")
     @Transactional
     public Response update(@PathParam("id") Long id, CreateUserRequest userRequest){
+
+        Set<ConstraintViolation<CreateUserRequest>> violations = validator.validate(userRequest);
+
+        if(!violations.isEmpty())
+            return ResponseError.createFromValidation(violations).withStatusCode(ResponseError.UNPROCESSABLE_ENTITY_STATUS);
+
         Optional<User> p = User.findByIdOptional(id);
 
         if(p.isPresent()) {
