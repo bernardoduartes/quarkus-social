@@ -88,6 +88,7 @@ public class UserResource {
     @Transactional
     public Response delete(@PathParam("id") Long id){
         Optional<User> p = User.findByIdOptional(id);
+
         p.ifPresentOrElse(User::delete, () -> {
             throw new NotFoundException("User not foud!");
         });
