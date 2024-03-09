@@ -38,13 +38,15 @@ public class FollowerResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        var entity = new Follower();
-        entity.setUser(userOptional.get());
-        entity.setFollower(followerOptional.get());
+        boolean isFollower = repository.isFollower(followerOptional.get(), userOptional.get());
 
-        repository.persist(entity);
+        if(!isFollower) {
+            var entity = new Follower();
+            entity.setUser(userOptional.get());
+            entity.setFollower(followerOptional.get());
+            repository.persist(entity);
+        }
 
         return Response.status(Response.Status.NO_CONTENT).build();
-
     }
 }
