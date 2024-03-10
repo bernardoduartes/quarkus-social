@@ -1,8 +1,10 @@
 package br.shizuca.social.resource;
 
 import br.shizuca.social.domain.model.Follower;
+import br.shizuca.social.domain.model.Post;
 import br.shizuca.social.domain.model.User;
 import br.shizuca.social.domain.repository.FollowerRepository;
+import br.shizuca.social.domain.repository.PostRepository;
 import br.shizuca.social.dto.CreatePostRequest;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
@@ -22,6 +24,8 @@ class PostResourceTest {
 
     @Inject
     FollowerRepository followerRepository;
+    @Inject
+    PostRepository postRepository;
 
     private Long userId;
     private Long userFollowerId;
@@ -35,6 +39,12 @@ class PostResourceTest {
         user.setName("Fulano");
         User.persist(user);
         userId = user.getId();
+
+        //criada a postagem para o usuario
+        Post post = new Post();
+        post.setText("Hello");
+        post.setUser(user);
+        postRepository.persist(post);
 
         var userFollower = new User();
         userFollower.setAge(31);
@@ -52,6 +62,7 @@ class PostResourceTest {
         follower.setUser(user);
         follower.setFollower(userFollower);
         followerRepository.persist(follower);
+
     }
 
     @Test
@@ -140,6 +151,19 @@ class PostResourceTest {
                 .then()
                 .statusCode(403)
                 .body(Matchers.is("You have no acess to the post"));
+    }
+
+    @Test
+    @DisplayName("should list posts")
+    public void should_list_posts(){
+        given()
+                .pathParam("userId", userId)
+                .header("followerId", userFollowerId)
+                .when()
+                .get()
+                .then()
+                .statusCode(200)
+                .body("size()", Matchers.is(1));
     }
 
     public Long getUserId() {
