@@ -27,6 +27,7 @@ class FollowerResourceTest {
 
     private Long userId;
     private Long followerId;
+    private Long newFollowerId;
 
     @BeforeEach
     @Transactional
@@ -36,6 +37,12 @@ class FollowerResourceTest {
         user.setName("Fulano");
         User.persist(user);
         userId = user.getId();
+
+        var newFollower = new User();
+        newFollower.setAge(30);
+        newFollower.setName("New");
+        User.persist(newFollower);
+        newFollowerId = newFollower.getId();
 
         var follower = new User();
         follower.setAge(31);
@@ -127,7 +134,7 @@ class FollowerResourceTest {
     public void should_follow_the_giving_user(){
 
         var body = new FollowerRequest();
-        body.setFollowerId(followerId);
+        body.setFollowerId(newFollowerId);
 
         given()
                 .contentType(ContentType.JSON)
