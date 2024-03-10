@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class FollowerResourceTest {
 
     private Long userId;
+    private Long followerId;
 
     @BeforeEach
     @Transactional
@@ -29,6 +30,12 @@ class FollowerResourceTest {
         user.setName("Fulano");
         User.persist(user);
         userId = user.getId();
+
+        var follower = new User();
+        follower.setAge(31);
+        follower.setName("Cicrano");
+        User.persist(follower);
+        followerId = follower.getId();
     }
 
     @Test
@@ -61,6 +68,22 @@ class FollowerResourceTest {
                 .contentType(ContentType.JSON)
                 .body(body)
                 .pathParam("userId", inexistentUserId)
+                .when()
+                .put()
+                .then()
+                .statusCode(Response.Status.NOT_FOUND.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("should return 404 when an user follow is inexistent")
+    public void should_return_404_when_an_user_follow_is_inexistent(){
+        var body = new FollowerRequest();
+        body.setFollowerId(999l);
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(body)
+                .pathParam("userId", userId)
                 .when()
                 .put()
                 .then()
