@@ -3,17 +3,15 @@ package br.shizuca.social.resource;
 import br.shizuca.social.domain.model.User;
 import br.shizuca.social.dto.CreatePostRequest;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
-import io.quarkus.test.common.http.TestHTTPResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
-import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
-import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
 @TestHTTPEndpoint(PostResource.class)
@@ -45,6 +43,36 @@ class PostResourceTest {
                 .post()
                 .then()
                 .statusCode(201);
+    }
+
+    @Test
+    @DisplayName("should return 404 for post with an inexistent user")
+    public void should_return_404_for_post_with_an_inexistent_user(){
+        var postRequest = new CreatePostRequest();
+        postRequest.setText("Some text");
+
+        var inexistentUserId = 999;
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(postRequest)
+                .pathParam("userId", inexistentUserId)
+                .when()
+                .post()
+                .then()
+                .statusCode(404);
+    }
+
+    @Test
+    @DisplayName("should return 400 when followerId header is not present")
+    public void should_return_400_when_followerId_header_is_not_present(){
+        given()
+                .pathParam("userId", userId)
+                .when()
+                .get()
+                .then()
+                .statusCode(400)
+                .body(Matchers.is("HeaderParam followerId is required"));
     }
 
     public Long getUserId() {
