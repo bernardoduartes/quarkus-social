@@ -1,10 +1,13 @@
 package br.shizuca.social.resource;
 
+import br.shizuca.social.domain.model.Follower;
 import br.shizuca.social.domain.model.User;
+import br.shizuca.social.domain.repository.FollowerRepository;
 import br.shizuca.social.dto.CreatePostRequest;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
+import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,8 +20,12 @@ import static io.restassured.RestAssured.given;
 @TestHTTPEndpoint(PostResource.class)
 class PostResourceTest {
 
+    @Inject
+    FollowerRepository followerRepository;
+
     private Long userId;
     private Long userFollowerId;
+    private Long userNotFollowerId;
 
     @BeforeEach
     @Transactional
@@ -31,9 +38,20 @@ class PostResourceTest {
 
         var userFollower = new User();
         userFollower.setAge(31);
-        userFollower.setName("Terceiro");
+        userFollower.setName("Pedro");
         User.persist(userFollower);
         userFollowerId = userFollower.getId();
+
+        var userNotFollower = new User();
+        userNotFollower.setAge(52);
+        userNotFollower.setName("João");
+        User.persist(userNotFollower);
+        userNotFollowerId = userNotFollower.getId();
+
+        Follower follower = new Follower();
+        follower.setUser(user);
+        follower.setFollower(userFollower);
+        followerRepository.persist(follower);
     }
 
     @Test
@@ -111,11 +129,28 @@ class PostResourceTest {
                 .body(Matchers.is("Follow NOT_FOUND"));
     }
 
+    @Test
+    @DisplayName("should return 403 when follower isn't a user follower")
+    public void should_return_403_when_user_isnt_a_user_follower(){
+        given()
+                .pathParam("userId", userId)
+                .header("followerId", userNotFollowerId)
+                .when()
+                .get()
+                .then()
+                .statusCode(403)
+                .body(Matchers.is("You have no acess to the post"));
+    }
+
     public Long getUserId() {
         return userId;
     }
 
     public Long getUserFollowerId() {
         return userFollowerId;
+    }
+
+    public Long getUserNotFollowerId() {
+        return userNotFollowerId;
     }
 }
