@@ -1,10 +1,13 @@
 package br.shizuca.social.resource;
 
+import br.shizuca.social.domain.model.Follower;
 import br.shizuca.social.domain.model.User;
+import br.shizuca.social.domain.repository.FollowerRepository;
 import br.shizuca.social.dto.FollowerRequest;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
+import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.Response;
 import org.hamcrest.Matchers;
@@ -18,6 +21,9 @@ import static org.junit.jupiter.api.Assertions.*;
 @QuarkusTest
 @TestHTTPEndpoint(FollowerResource.class)
 class FollowerResourceTest {
+
+    @Inject
+    FollowerRepository followerRepository;
 
     private Long userId;
     private Long followerId;
@@ -36,6 +42,11 @@ class FollowerResourceTest {
         follower.setName("Cicrano");
         User.persist(follower);
         followerId = follower.getId();
+
+        var followerEntity = new Follower();
+        followerEntity.setFollower(follower);
+        followerEntity.setUser(user);
+        followerRepository.persist(followerEntity);
     }
 
     @Test
@@ -126,5 +137,23 @@ class FollowerResourceTest {
                 .put()
                 .then()
                 .statusCode(Response.Status.NO_CONTENT.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("should return 404 when list_follows_for_inexistent_user")
+    public void should_return_404_when_list_follows_for_inexistent_user(){
+        var body = new FollowerRequest();
+        body.setFollowerId(followerId);
+
+        var inexistentUserId = 999;
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(body)
+                .pathParam("userId", inexistentUserId)
+                .when()
+                .get()
+                .then()
+                .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }
 }
