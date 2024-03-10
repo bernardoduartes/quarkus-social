@@ -18,6 +18,7 @@ import static io.restassured.RestAssured.given;
 class PostResourceTest {
 
     private Long userId;
+    private Long userFollowerId;
 
     @BeforeEach
     @Transactional
@@ -27,6 +28,12 @@ class PostResourceTest {
         user.setName("Fulano");
         User.persist(user);
         userId = user.getId();
+
+        var userFollower = new User();
+        userFollower.setAge(31);
+        userFollower.setName("Terceiro");
+        User.persist(userFollower);
+        userFollowerId = userFollower.getId();
     }
 
     @Test
@@ -82,13 +89,33 @@ class PostResourceTest {
 
         given()
                 .pathParam("userId", inexistentUserId)
+                .headers("followerId", userFollowerId)
                 .when()
                 .get()
                 .then()
                 .statusCode(404);
     }
 
+    @Test
+    @DisplayName("should return 404 when follower doesn't exist")
+    public void should_return_404_when_follower_doesnt_exist(){
+        var userFollowerId = 999;
+
+        given()
+                .pathParam("userId", userId)
+                .headers("followerId", userFollowerId)
+                .when()
+                .get()
+                .then()
+                .statusCode(404)
+                .body(Matchers.is("Follow NOT_FOUND"));
+    }
+
     public Long getUserId() {
         return userId;
+    }
+
+    public Long getUserFollowerId() {
+        return userFollowerId;
     }
 }
