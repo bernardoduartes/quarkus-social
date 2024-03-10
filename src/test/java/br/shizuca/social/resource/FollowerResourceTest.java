@@ -89,4 +89,42 @@ class FollowerResourceTest {
                 .then()
                 .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }
+
+    @Test
+    @DisplayName("should list a user's followers")
+    public void listFollowersTest(){
+        var response =
+                given()
+                        .contentType(ContentType.JSON)
+                        .pathParam("userId", userId)
+                        .when()
+                        .get()
+                        .then()
+                        .extract().response();
+
+        var followersCount = response.jsonPath().get("followersCount");
+        var followersContent = response.jsonPath().getList("content");
+
+        assertEquals(Response.Status.OK.getStatusCode(), response.statusCode());
+        assertEquals(1, followersCount);
+        assertEquals(1, followersContent.size());
+
+    }
+
+    @Test
+    @DisplayName("should follow the giving user")
+    public void should_follow_the_giving_user(){
+
+        var body = new FollowerRequest();
+        body.setFollowerId(followerId);
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(body)
+                .pathParam("userId", userId)
+                .when()
+                .put()
+                .then()
+                .statusCode(Response.Status.NO_CONTENT.getStatusCode());
+    }
 }
