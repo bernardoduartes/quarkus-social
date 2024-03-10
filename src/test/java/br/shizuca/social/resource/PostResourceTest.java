@@ -75,6 +75,19 @@ class PostResourceTest {
                 .body(Matchers.is("HeaderParam followerId is required"));
     }
 
+    @Test
+    @DisplayName("should return 404 when user doesn't exist")
+    public void should_return_404_when_user_doesnt_exist(){
+        var inexistentUserId = 999;
+
+        given()
+                .pathParam("userId", inexistentUserId)
+                .when()
+                .get()
+                .then()
+                .statusCode(404);
+    }
+
     public Long getUserId() {
         return userId;
     }
