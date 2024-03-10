@@ -163,4 +163,30 @@ class FollowerResourceTest {
                 .then()
                 .statusCode(Response.Status.NOT_FOUND.getStatusCode());
     }
+
+    @Test
+    @DisplayName("should return 404 on unfollow user and User id doen't exist")
+    public void should_return_404_on_unfollow_user_and_User_id_doent_exist(){
+        var inexistentUserId = 999;
+
+        given()
+                .pathParam("userId", inexistentUserId)
+                .queryParam("followerId", followerId)
+                .when()
+                .delete()
+                .then()
+                .statusCode(Response.Status.NOT_FOUND.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("unfollow_user_test")
+    public void unfollow_user_test(){
+        given()
+                .pathParam("userId", userId)
+                .queryParam("followerId", followerId)
+                .when()
+                .delete()
+                .then()
+                .statusCode(Response.Status.NO_CONTENT.getStatusCode());
+    }
 }
